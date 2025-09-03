@@ -1,0 +1,85 @@
+# AI Assistant - Python Dependencies
+# Phase 1: Core Chat Foundation
+
+# =============================================================================
+# CORE WEB FRAMEWORK
+# =============================================================================
+# FastAPI - Modern async web framework for building APIs
+fastapi==0.104.1
+
+# Uvicorn - ASGI server for running FastAPI applications
+uvicorn[standard]==0.24.0
+
+# Python multipart - For handling file uploads and form data
+python-multipart==0.0.6
+
+# =============================================================================
+# USER INTERFACE
+# =============================================================================
+# Gradio - Python library for building ML/AI user interfaces
+gradio==4.8.0
+
+# =============================================================================
+# AI & MACHINE LEARNING
+# =============================================================================
+# Google Generative AI - Official Google Gemini API client
+google-generativeai==0.3.2
+
+# LangChain - Framework for developing AI applications (Phase 2)
+langchain==0.1.0
+langchain-google-genai==0.0.5
+
+# =============================================================================
+# DATABASE & STORAGE
+# =============================================================================
+# SQLAlchemy - SQL toolkit and ORM for Python
+sqlalchemy==2.0.23
+
+# Pydantic - Data validation using Python type hints
+pydantic==2.5.0
+
+# =============================================================================
+# CONFIGURATION & UTILITIES
+# =============================================================================
+# Python-dotenv - Load environment variables from .env file
+python-dotenv==1.0.0
+
+# Requests - HTTP library for making API calls
+requests==2.31.0
+
+# =============================================================================
+# DEVELOPMENT & TESTING (optional but recommended)
+# =============================================================================
+# Pytest - Testing framework
+pytest==7.4.3
+
+# Black - Code formatter
+black==23.9.1
+
+# Flake8 - Code linter
+flake8==6.1.0
+
+# =============================================================================
+# PHASE 2 DEPENDENCIES (commented out for now)
+# =============================================================================
+# ChromaDB - Vector database for semantic search
+chromadb==0.4.18
+
+# =============================================================================
+# PHASE 3 DEPENDENCIES (commented out for now) 
+# =============================================================================
+# Audio processing libraries will be added in Phase 3
+
+# =============================================================================
+# NOTES FOR INSTALLATION
+# =============================================================================
+# Install all dependencies:
+#   pip install -r requirements.txt
+#
+# Install development dependencies only:
+#   pip install pytest black flake8
+#
+# Phase-specific installation:
+#   Phase 1: Install only uncommented dependencies above
+#   Phase 2: Uncomment LangChain and ChromaDB dependencies
+#   Phase 3: Add audio processing dependencies
