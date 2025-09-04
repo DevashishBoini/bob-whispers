@@ -1,0 +1,443 @@
+{
+  "test_start_time": "2025-09-04T07:29:44.156877",
+  "test_end_time": "2025-09-04T07:33:48.273684",
+  "conversation_id": "conv_98a431fe",
+  "messages_created": [
+    {
+      "sequence": 1,
+      "user_message": "How do I set up FastAPI with proper error handling?",
+      "expected_ai_response": "To set up FastAPI with proper error handling, you should create custom exception handlers using @app.exception_handler decorator. For example, you can handle ValidationError exceptions and return structured JSON responses with proper HTTP status codes like 422 for validation errors.",
+      "actual_ai_response": "For common HTTP errors, raise `HTTPException` directly in your path operations, which FastAPI will automatically convert into appropriate JSON responses. For custom exceptions or to override default handling of standard Python exceptions, use `@app.exception_handler` to register a function that returns a custom `JSONResponse` object.",
+      "message_id": 66,
+      "timestamp": "2025-09-04T07:29:48.396984",
+      "token_usage": 0
+    },
+    {
+      "sequence": 2,
+      "user_message": "What's the best way to handle database connections in FastAPI?",
+      "expected_ai_response": "Use dependency injection with SQLAlchemy Session. Create a get_db() dependency that yields a database session, and use Depends(get_db) in your route parameters. Always use try-finally blocks or context managers to ensure connections are properly closed. Consider using connection pooling for production.",
+      "actual_ai_response": "The best way to manage database connections in FastAPI is by leveraging its dependency injection system. Create a dependency function that yields a database session or connection, ensuring it's automatically opened for the request and properly closed afterwards, typically using a `try...finally` block within the dependency.",
+      "message_id": 67,
+      "timestamp": "2025-09-04T07:29:58.738983",
+      "token_usage": 0
+    },
+    {
+      "sequence": 3,
+      "user_message": "How do I implement JWT authentication in FastAPI?",
+      "expected_ai_response": "For JWT authentication in FastAPI: 1) Install python-jose[cryptography] and passlib[bcrypt], 2) Create JWT tokens using jose.jwt.encode() with a SECRET_KEY, 3) Use OAuth2PasswordBearer for token extraction, 4) Create a dependency to verify tokens and extract user info, 5) Protect routes with Depends(get_current_user).",
+      "actual_ai_response": "To implement JWT authentication in FastAPI, create a dependency function that extracts the token from the `Authorization` header, then uses a library like `PyJWT` to decode, validate its signature and expiration. This dependency can then be injected into your path operations to protect routes and provide the authenticated user's data.",
+      "message_id": 68,
+      "timestamp": "2025-09-04T07:30:04.773375",
+      "token_usage": 0
+    },
+    {
+      "sequence": 4,
+      "user_message": "What are the best practices for FastAPI project structure?",
+      "expected_ai_response": "Best FastAPI project structure: app/ (main application), models/ (SQLAlchemy models), schemas/ (Pydantic models), crud/ (database operations), api/ (route handlers), core/ (configuration, security), tests/ (test files). Use dependency injection, separate concerns, and follow domain-driven design patterns.",
+      "actual_ai_response": "For FastAPI project structure, it's best to organize your application into modular components like `routers` for API endpoints, `schemas` for data validation, and `dependencies` for reusable logic such as database connections or authentication. This separation of concerns promotes maintainability and scalability, often with a main `app.py` file importing these modules.",
+      "message_id": 69,
+      "timestamp": "2025-09-04T07:30:10.866914",
+      "token_usage": 0
+    },
+    {
+      "sequence": 5,
+      "user_message": "How do I optimize FastAPI performance for production?",
+      "expected_ai_response": "FastAPI performance optimization: 1) Use async/await for I/O operations, 2) Enable Gzip compression, 3) Implement proper database connection pooling, 4) Use Redis for caching, 5) Add request/response middleware for monitoring, 6) Configure Uvicorn with multiple workers, 7) Use CDN for static assets, 8) Implement proper logging and monitoring.",
+      "actual_ai_response": "To optimize FastAPI performance for production, run it with an efficient ASGI server like Uvicorn managed by Gunicorn workers for concurrency. Ensure all I/O-bound operations (e.g., database calls, external API requests) are properly `await`ed to fully utilize asynchronous capabilities, and implement efficient database queries and caching strategies. This leverages FastAPI's non-blocking nature and distributes workload effectively.",
+      "message_id": 70,
+      "timestamp": "2025-09-04T07:30:19.493689",
+      "token_usage": 0
+    },
+    {
+      "sequence": 6,
+      "user_message": "What's the difference between Pydantic v1 and v2?",
+      "expected_ai_response": "Pydantic v2 major changes: 1) Core rewritten in Rust for 5-50x performance improvement, 2) New BaseModel configuration using model_config instead of Config class, 3) Field validation changes - validator decorator replaced with field_validator, 4) Serialization improvements with new serialization context, 5) Better error messages and debugging, 6) Breaking changes in JSON schema generation.",
+      "actual_ai_response": "Pydantic v2 offers significant performance improvements over v1, primarily due to a rewritten validation engine based on Rust (`pydantic-core`). It also introduces a more flexible and robust API for data validation and parsing, including new decorators like `model_validator` and `field_validator`, though it involves some breaking changes requiring migration from v1.",
+      "message_id": 71,
+      "timestamp": "2025-09-04T07:30:30.295650",
+      "token_usage": 0
+    },
+    {
+      "sequence": 7,
+      "user_message": "How do I handle file uploads in FastAPI?",
+      "expected_ai_response": "FastAPI file uploads: Use UploadFile parameter with File() dependency. For single files: async def upload(file: UploadFile = File(...)). For multiple files: files: List[UploadFile] = File(...). Read content with await file.read() or file.file.read(). Validate file types, implement size limits, and store files securely. Use Form() for additional form data with file uploads.",
+      "actual_ai_response": "To handle file uploads in FastAPI, define a path operation parameter with type `UploadFile` or `bytes`. `UploadFile` provides methods like `read()`, `write()`, and `seek()` for streaming large files, while `bytes` loads the entire file into memory, suitable for smaller files.",
+      "message_id": 72,
+      "timestamp": "2025-09-04T07:30:35.643654",
+      "token_usage": 0
+    },
+    {
+      "sequence": 8,
+      "user_message": "What's the best way to test FastAPI applications?",
+      "expected_ai_response": "FastAPI testing best practices: 1) Use pytest with TestClient from fastapi.testclient, 2) Create test database with SQLAlchemy fixtures, 3) Use dependency overrides for mocking, 4) Test both sync and async endpoints, 5) Implement integration tests for database operations, 6) Use parametrized tests for multiple scenarios, 7) Mock external API calls, 8) Test authentication and authorization flows.",
+      "actual_ai_response": "The best way to test FastAPI applications is by using `pytest` combined with FastAPI's `TestClient` to simulate requests against your application. This allows you to effectively test API endpoints, dependencies, and database interactions (often by mocking or using an in-memory database) in an isolated environment. Utilize `pytest` fixtures for efficient setup and teardown of test resources.",
+      "message_id": 73,
+      "timestamp": "2025-09-04T07:30:41.834103",
+      "token_usage": 0
+    },
+    {
+      "sequence": 9,
+      "user_message": "How do I implement proper logging in FastAPI?",
+      "expected_ai_response": "FastAPI logging setup: 1) Configure Python logging module with proper formatters, 2) Use structured logging with JSON format for production, 3) Implement request/response logging middleware, 4) Log different levels (DEBUG, INFO, WARNING, ERROR), 5) Use correlation IDs for request tracing, 6) Integrate with monitoring tools like ELK stack or Prometheus, 7) Avoid logging sensitive information.",
+      "actual_ai_response": "To implement proper logging in FastAPI, leverage Python's built-in `logging` module by configuring a logger, handlers, and formatters, typically in your application's entry point (`main.py`). You can then obtain specific loggers using `logging.getLogger(__name__)` in various modules to record events, debug information, and errors. This setup allows for centralized and flexible log management, routing logs to files, console, or external services.",
+      "message_id": 74,
+      "timestamp": "2025-09-04T07:30:48.948887",
+      "token_usage": 0
+    },
+    {
+      "sequence": 10,
+      "user_message": "What are FastAPI background tasks and when to use them?",
+      "expected_ai_response": "FastAPI BackgroundTasks allow running functions after returning response. Use for: email sending, file processing, cleanup operations. Example: def send_email(email: str): pass; async def endpoint(background_tasks: BackgroundTasks): background_tasks.add_task(send_email, 'user@example.com'). For heavy tasks, consider Celery or RQ instead.",
+      "actual_ai_response": "FastAPI background tasks allow you to run operations after sending a response to the client, without blocking the main request process. You should use them for non-blocking, post-response tasks like sending emails, generating reports, or logging, where the client doesn't need to wait for the task to complete.",
+      "message_id": 75,
+      "timestamp": "2025-09-04T07:30:54.216407",
+      "token_usage": 0
+    },
+    {
+      "sequence": 11,
+      "user_message": "How do I learn Python effectively?",
+      "expected_ai_response": "Learn Python effectively: 1) Start with basics (variables, functions, data structures), 2) Practice with coding challenges on platforms like LeetCode or HackerRank, 3) Build real projects, 4) Read Python documentation and PEPs, 5) Join Python communities, 6) Learn frameworks like Django or Flask, 7) Understand Python's philosophy and idioms.",
+      "actual_ai_response": "To learn Python effectively, start with the fundamentals (syntax, data types, control flow, functions) and immediately apply them through hands-on coding exercises and small personal projects. Consistent practice, reading official documentation, and exploring open-source code will deepen your understanding and help you learn best practices.",
+      "message_id": 76,
+      "timestamp": "2025-09-04T07:31:04.666900",
+      "token_usage": 0
+    },
+    {
+      "sequence": 12,
+      "user_message": "What's the difference between lists and tuples?",
+      "expected_ai_response": "Lists vs Tuples: Lists are mutable (can be modified), use square brackets [], support append/remove operations. Tuples are immutable (cannot be changed), use parentheses (), are hashable and can be dictionary keys. Tuples are faster for iteration and use less memory.",
+      "actual_ai_response": "Lists are mutable, ordered collections of items, defined using square brackets `[]`, allowing elements to be added, removed, or changed after creation. Tuples, conversely, are immutable, ordered collections defined using parentheses `()`, meaning their elements cannot be modified once the tuple is created.",
+      "message_id": 77,
+      "timestamp": "2025-09-04T07:31:10.198408",
+      "token_usage": 0
+    },
+    {
+      "sequence": 13,
+      "user_message": "How do decorators work in Python?",
+      "expected_ai_response": "Python decorators are functions that modify other functions. They use @decorator syntax. A decorator takes a function as argument and returns a modified function. Common use cases: logging, timing, authentication, caching. Example: @functools.wraps preserves original function metadata.",
+      "actual_ai_response": "Decorators in Python are a syntactic sugar that allows you to modify or extend the behavior of a function or method without permanently altering its definition. They essentially wrap another function, taking it as an argument and returning a new function that often calls the original. This is achieved by placing the decorator's name with an `@` symbol directly above the function you want to decorate.",
+      "message_id": 78,
+      "timestamp": "2025-09-04T07:31:15.259594",
+      "token_usage": 0
+    },
+    {
+      "sequence": 14,
+      "user_message": "What are Python context managers?",
+      "expected_ai_response": "Context managers handle resource management using 'with' statement. They implement __enter__ and __exit__ methods. Common example: 'with open(file) as f:' automatically closes file. You can create custom context managers using @contextmanager decorator or by implementing the context manager protocol.",
+      "actual_ai_response": "Python context managers are objects that define runtime contexts using `with` statements, ensuring resources are properly acquired and released. They simplify resource management by automatically handling setup and teardown, even if errors occur, making code cleaner and safer. You typically use them for file I/O, locking, or database connections.",
+      "message_id": 79,
+      "timestamp": "2025-09-04T07:31:20.112020",
+      "token_usage": 0
+    },
+    {
+      "sequence": 15,
+      "user_message": "How do I handle exceptions in Python?",
+      "expected_ai_response": "Python exception handling: Use try-except blocks, catch specific exceptions rather than bare except, use finally for cleanup, raise exceptions with descriptive messages. Example: try: risky_operation() except ValueError as e: handle_error(e) finally: cleanup(). Use custom exceptions for application-specific errors.",
+      "actual_ai_response": "In Python, you handle exceptions using `try` and `except` blocks: code that might raise an error goes inside `try`, and the `except` block catches and handles specific or general exceptions. You can optionally use `else` for code that runs if no exception occurred, and `finally` for cleanup code that always executes, regardless of whether an exception was raised.",
+      "message_id": 80,
+      "timestamp": "2025-09-04T07:31:25.667875",
+      "token_usage": 0
+    },
+    {
+      "sequence": 16,
+      "user_message": "What's the difference between == and is in Python?",
+      "expected_ai_response": "== checks value equality (calls __eq__ method), 'is' checks identity (same object in memory). Use == for comparing values, 'is' for comparing with None, True, False, or checking if two variables reference the same object. Example: [1,2,3] == [1,2,3] is True, but [1,2,3] is [1,2,3] is False.",
+      "actual_ai_response": "In Python, `==` checks for value equality, meaning it determines if two objects have the same content or value. On the other hand, `is` checks for identity, confirming if two variables refer to the exact same object in memory.",
+      "message_id": 81,
+      "timestamp": "2025-09-04T07:31:35.819175",
+      "token_usage": 0
+    },
+    {
+      "sequence": 17,
+      "user_message": "How do I use virtual environments?",
+      "expected_ai_response": "Python virtual environments isolate project dependencies. Create with: python -m venv myenv, activate with: source myenv/bin/activate (Linux/Mac) or myenv\\Scripts\\activate (Windows). Install packages with pip, save dependencies with pip freeze > requirements.txt. Deactivate with 'deactivate' command.",
+      "actual_ai_response": "To use virtual environments in Python, you first create one for your project using `python -m venv <env_name>`. Then, you activate it (e.g., `source <env_name>/bin/activate` on macOS/Linux or `.\\<env_name>\\Scripts\\activate` on Windows) to isolate your project's dependencies. Once activated, you can install project-specific packages using `pip install <package_name>` without affecting other Python projects or your global installation.",
+      "message_id": 82,
+      "timestamp": "2025-09-04T07:31:41.862060",
+      "token_usage": 0
+    },
+    {
+      "sequence": 18,
+      "user_message": "What are Python generators?",
+      "expected_ai_response": "Generators are functions that yield values lazily, saving memory. They use 'yield' keyword instead of 'return'. Generator expressions: (x*2 for x in range(10)). They're iterables that produce values on-demand. Useful for processing large datasets or infinite sequences. Once exhausted, they can't be reused.",
+      "actual_ai_response": "Python generators are functions that produce an iterator, allowing you to iterate over a sequence of values one at a time. They use the `yield` keyword instead of `return` to emit a value and pause execution, retaining their state between calls. This makes them memory-efficient, especially when dealing with large datasets, as values are generated on-the-fly rather than all at once.",
+      "message_id": 83,
+      "timestamp": "2025-09-04T07:31:46.981116",
+      "token_usage": 0
+    },
+    {
+      "sequence": 19,
+      "user_message": "How do I work with JSON in Python?",
+      "expected_ai_response": "Python JSON handling: import json module. json.loads() converts JSON string to Python object, json.dumps() converts Python object to JSON string. json.load() reads from file, json.dump() writes to file. Handle encoding issues with ensure_ascii=False. Use custom encoders for complex objects.",
+      "actual_ai_response": "To work with JSON in Python, use the built-in `json` module. You can parse JSON strings or files into Python objects (like dictionaries and lists) using `json.loads()` or `json.load()`, respectively. Conversely, to convert Python objects back into JSON strings or files, use `json.dumps()` or `json.dump()`.",
+      "message_id": 84,
+      "timestamp": "2025-09-04T07:31:53.152246",
+      "token_usage": 0
+    },
+    {
+      "sequence": 20,
+      "user_message": "What are lambda functions?",
+      "expected_ai_response": "Lambda functions are anonymous functions defined with 'lambda' keyword. Syntax: lambda arguments: expression. Example: square = lambda x: x**2. Commonly used with map(), filter(), sort(). Limited to single expressions. Use regular functions for complex logic.",
+      "actual_ai_response": "Lambda functions in Python are small, anonymous functions defined using the `lambda` keyword, without a `def` statement. They can take any number of arguments but can only have one expression, which is evaluated and returned. They are primarily used for short, single-expression operations, often as arguments to higher-order functions like `map()`, `filter()`, or `sorted()`.",
+      "message_id": 85,
+      "timestamp": "2025-09-04T07:31:57.678745",
+      "token_usage": 0
+    },
+    {
+      "sequence": 21,
+      "user_message": "How do I debug Python code?",
+      "expected_ai_response": "Python debugging methods: 1) Use print statements for simple debugging, 2) Python debugger (pdb): import pdb; pdb.set_trace(), 3) IDE debuggers with breakpoints, 4) Logging for production debugging, 5) Unit tests to isolate issues, 6) Static analysis tools like pylint, 7) Profiling tools for performance issues.",
+      "actual_ai_response": "To debug Python code, you can start with `print()` statements to inspect variable values and track execution flow at various points. For more advanced debugging, use a debugger like Python's built-in `pdb` module (or an IDE's integrated debugger) to set breakpoints, step through code line by line, and examine the state of your program interactively.",
+      "message_id": 86,
+      "timestamp": "2025-09-04T07:32:08.697807",
+      "token_usage": 0
+    },
+    {
+      "sequence": 22,
+      "user_message": "What are Python metaclasses?",
+      "expected_ai_response": "Metaclasses are classes whose instances are classes. They control class creation. 'type' is the default metaclass. Use __new__ and __init__ methods in metaclasses. Common use: ORMs, singletons, attribute validation. Generally avoid unless you have a specific need - 'if you're not sure you need metaclasses, you don't'.",
+      "actual_ai_response": "Python metaclasses are \"classes of classes,\" meaning they define how classes are created. They allow you to customize or hook into the class creation process, providing a powerful mechanism to modify class behavior even before instances are made. Metaclasses are used for advanced scenarios like enforcing API conventions, automatically registering classes, or altering class attributes dynamically.",
+      "message_id": 87,
+      "timestamp": "2025-09-04T07:32:13.004468",
+      "token_usage": 0
+    },
+    {
+      "sequence": 23,
+      "user_message": "How do I handle dates and times?",
+      "expected_ai_response": "Python datetime handling: Use datetime module. datetime.now() for current time, strptime() to parse strings, strftime() to format. Use timezone-aware datetime with pytz or zoneinfo. For date arithmetic, use timedelta. Consider using arrow or pendulum libraries for advanced date operations.",
+      "actual_ai_response": "To handle dates and times in Python, use the built-in `datetime` module. You can create `date`, `time`, `datetime`, and `timedelta` objects to represent specific points in time or durations. This module allows you to perform operations like parsing, formatting, arithmetic, and timezone conversions.",
+      "message_id": 88,
+      "timestamp": "2025-09-04T07:32:17.122059",
+      "token_usage": 0
+    },
+    {
+      "sequence": 24,
+      "user_message": "What are Python type hints?",
+      "expected_ai_response": "Type hints specify expected types for variables, function parameters, and return values. Use typing module for complex types. Example: def greet(name: str) -> str: return f'Hello {name}'. Benefits: better IDE support, static type checking with mypy, self-documenting code. Optional in Python but recommended for larger projects.",
+      "actual_ai_response": "Python type hints are annotations that indicate the expected data types for variables, function arguments, and return values. They are primarily used for static type checking tools like MyPy to catch potential type-related errors before runtime and enhance code readability and maintainability. While Python remains dynamically typed, type hints serve as valuable documentation and enable better developer tooling.",
+      "message_id": 89,
+      "timestamp": "2025-09-04T07:32:23.503925",
+      "token_usage": 0
+    },
+    {
+      "sequence": 25,
+      "user_message": "How do I optimize Python performance?",
+      "expected_ai_response": "Python performance optimization: 1) Profile first with cProfile, 2) Use built-in functions and libraries, 3) List comprehensions over loops, 4) Avoid global variables, 5) Use generators for large datasets, 6) Consider NumPy for numerical operations, 7) Cython or numba for CPU-intensive tasks, 8) Async programming for I/O bound tasks.",
+      "actual_ai_response": "To optimize Python performance, start by profiling your code to identify bottlenecks, then apply more efficient algorithms and data structures. Leverage Python's built-in functions and C-optimized libraries, and for computationally intensive parts, consider using specialized tools like Numba or Cython.",
+      "message_id": 90,
+      "timestamp": "2025-09-04T07:32:30.608750",
+      "token_usage": 0
+    },
+    {
+      "sequence": 26,
+      "user_message": "What's machine learning?",
+      "expected_ai_response": "Machine learning is a subset of AI where computers learn patterns from data without explicit programming. Types: supervised (labeled data), unsupervised (pattern finding), reinforcement (reward-based). Common algorithms: linear regression, decision trees, neural networks. Applications: image recognition, NLP, recommendation systems.",
+      "actual_ai_response": "Machine learning is a field of artificial intelligence that enables systems to learn from data, identify patterns, and make decisions or predictions without being explicitly programmed. It involves developing algorithms that can be trained on datasets to improve their performance over time.",
+      "message_id": 91,
+      "timestamp": "2025-09-04T07:32:39.554962",
+      "token_usage": 0
+    },
+    {
+      "sequence": 27,
+      "user_message": "How do neural networks work?",
+      "expected_ai_response": "Neural networks mimic brain neurons with interconnected nodes. Input layer receives data, hidden layers process it through weighted connections and activation functions, output layer produces results. Learning happens through backpropagation, adjusting weights based on errors. Deep learning uses multiple hidden layers.",
+      "actual_ai_response": "Neural networks are a type of machine learning model, inspired by the human brain, consisting of interconnected layers of nodes (neurons) that process data. They learn to recognize complex patterns and make predictions by adjusting the 'weights' of these connections during training on large datasets, similar to how machine learning enables systems to learn from data.",
+      "message_id": 92,
+      "timestamp": "2025-09-04T07:32:45.321095",
+      "token_usage": 0
+    },
+    {
+      "sequence": 28,
+      "user_message": "What's the difference between AI and ML?",
+      "expected_ai_response": "AI (Artificial Intelligence) is the broad concept of machines performing tasks that require human intelligence. ML (Machine Learning) is a subset of AI focused on learning from data. AI includes rule-based systems, while ML specifically learns patterns. Deep learning is a subset of ML using neural networks.",
+      "actual_ai_response": "Artificial intelligence (AI) is a broad field focused on creating machines that can simulate human intelligence, enabling them to reason, learn, and solve problems. Machine learning (ML), as we discussed earlier, is a subfield of AI that specifically focuses on developing algorithms that allow systems to learn from data and make predictions or decisions without being explicitly programmed. Therefore, while all machine learning is AI, not all AI is machine learning.",
+      "message_id": 93,
+      "timestamp": "2025-09-04T07:32:50.223568",
+      "token_usage": 0
+    },
+    {
+      "sequence": 29,
+      "user_message": "What are REST APIs?",
+      "expected_ai_response": "REST APIs are web services following Representational State Transfer principles. They use HTTP methods (GET, POST, PUT, DELETE) for operations, have stateless communication, use JSON for data exchange, and follow resource-based URLs. RESTful design emphasizes scalability and simplicity.",
+      "actual_ai_response": "REST APIs (Representational State Transfer Application Programming Interfaces) are an architectural style for designing networked applications. They define a set of constraints for creating web services that are stateless, client-server, cacheable, and layered. These APIs typically use standard HTTP methods (GET, POST, PUT, DELETE) to interact with resources identified by URIs, making them a common way for different software systems to communicate over the internet.",
+      "message_id": 94,
+      "timestamp": "2025-09-04T07:32:56.955005",
+      "token_usage": 0
+    },
+    {
+      "sequence": 30,
+      "user_message": "How do databases work?",
+      "expected_ai_response": "Databases store and organize data for efficient retrieval. Relational databases use tables with rows/columns, connected by relationships. SQL manages relational data. NoSQL databases (document, key-value, graph) handle unstructured data. ACID properties ensure data integrity. Indexing improves query performance.",
+      "actual_ai_response": "Databases are organized collections of information, designed for efficient storage, retrieval, and management of data. They rely on a Database Management System (DBMS) to allow users and applications to interact with the data through queries, ensuring data integrity, security, and concurrent access. Data is typically structured into tables, records, and fields, or other models depending on the database type.",
+      "message_id": 95,
+      "timestamp": "2025-09-04T07:33:02.224115",
+      "token_usage": 0
+    },
+    {
+      "sequence": 31,
+      "user_message": "What's version control?",
+      "expected_ai_response": "Version control tracks changes in code over time. Git is the most popular system. Key concepts: repositories, commits, branches, merges. Enables collaboration, rollback to previous versions, and parallel development. Distributed model means each developer has complete history locally.",
+      "actual_ai_response": "Version control is a system that records changes to a file or set of files over time, allowing you to track modifications, revert to previous versions, and manage different iterations of your work. It's crucial for collaborative projects as it helps multiple people work on the same codebase simultaneously without overwriting each other's changes. Git is a popular example of a version control system.",
+      "message_id": 96,
+      "timestamp": "2025-09-04T07:33:11.241549",
+      "token_usage": 0
+    },
+    {
+      "sequence": 32,
+      "user_message": "What's cloud computing?",
+      "expected_ai_response": "Cloud computing delivers computing services over the internet. Types: IaaS (infrastructure), PaaS (platform), SaaS (software). Benefits: scalability, cost-effectiveness, accessibility. Major providers: AWS, Azure, Google Cloud. Enables on-demand resource allocation and global deployment.",
+      "actual_ai_response": "Cloud computing is the on-demand delivery of computing services—such as servers, storage, databases, networking, software, analytics, and intelligence—over the Internet. Instead of owning and maintaining your own computing infrastructure, you access these resources from a third-party cloud provider, allowing for greater flexibility, scalability, and cost efficiency.",
+      "message_id": 97,
+      "timestamp": "2025-09-04T07:33:17.637288",
+      "token_usage": 0
+    },
+    {
+      "sequence": 33,
+      "user_message": "How does encryption work?",
+      "expected_ai_response": "Encryption converts readable data into unreadable format using algorithms and keys. Symmetric encryption uses same key for encryption/decryption. Asymmetric uses public/private key pairs. Hash functions create one-way fingerprints. Used for data protection, authentication, and digital signatures.",
+      "actual_ai_response": "Encryption works by transforming readable information (plaintext) into an unreadable, scrambled format (ciphertext) using an algorithm (cipher) and a secret key. This process makes the data unintelligible to anyone without the correct key. Only a party possessing the proper key can then decrypt the ciphertext back into its original readable form.",
+      "message_id": 98,
+      "timestamp": "2025-09-04T07:33:22.419564",
+      "token_usage": 0
+    },
+    {
+      "sequence": 34,
+      "user_message": "What's agile development?",
+      "expected_ai_response": "Agile is an iterative software development approach emphasizing collaboration, flexibility, and customer feedback. Key principles: working software over documentation, individuals over processes, customer collaboration over contracts. Common frameworks: Scrum, Kanban. Features short sprints and continuous improvement.",
+      "actual_ai_response": "Agile development is an iterative and incremental approach to software development that emphasizes collaboration, flexibility, and customer feedback. It focuses on delivering working software frequently through short development cycles called sprints, allowing teams to adapt to changing requirements and continuously improve. The core goal is to prioritize individuals and interactions, working software, customer collaboration, and responding to change over rigid processes.",
+      "message_id": 99,
+      "timestamp": "2025-09-04T07:33:26.645827",
+      "token_usage": 0
+    },
+    {
+      "sequence": 35,
+      "user_message": "What are design patterns?",
+      "expected_ai_response": "Design patterns are reusable solutions to common programming problems. Categories: Creational (object creation), Structural (object composition), Behavioral (object interaction). Examples: Singleton, Factory, Observer, Strategy. They improve code maintainability and communication among developers.",
+      "actual_ai_response": "Design patterns are reusable, proven solutions to common problems encountered in software design. They are not direct implementations but rather templates or blueprints that can be adapted to various situations, providing a common vocabulary and making systems more flexible, robust, and maintainable.",
+      "message_id": 100,
+      "timestamp": "2025-09-04T07:33:33.897742",
+      "token_usage": 0
+    }
+  ],
+  "semantic_searches_performed": 0,
+  "rate_limit_info": {
+    "delays_applied": [
+      2.0001418590545654,
+      2.000088930130005,
+      2.0001561641693115,
+      2.0001540184020996,
+      2.0001606941223145,
+      2.0001025199890137,
+      2.0001535415649414,
+      2.0000979900360107,
+      2.0001232624053955,
+      2.0001513957977295,
+      2.0001518726348877,
+      2.000129461288452,
+      2.0001275539398193,
+      2.000143527984619,
+      2.000101327896118,
+      2.0001027584075928,
+      2.0000977516174316,
+      2.000105381011963,
+      2.0001425743103027,
+      2.0001509189605713,
+      2.0001020431518555,
+      2.0001416206359863,
+      2.000133752822876,
+      2.000092029571533,
+      2.0000970363616943,
+      2.0000979900360107,
+      2.00012469291687,
+      2.000117540359497,
+      2.000126838684082,
+      2.0001261234283447,
+      2.0001325607299805,
+      2.0001325607299805,
+      2.0001320838928223,
+      2.0000929832458496
+    ],
+    "total_delay_time": 0.0,
+    "api_calls_made": 0,
+    "total_test_duration": 244.116807
+  },
+  "semantic_memory_tests": [],
+  "context_usage_tests": [],
+  "ai_response_analysis": [
+    {
+      "test_query": "Can you remind me about the specific steps for implementing JWT authentication in FastAPI that we discussed earlier? I need the exact libraries and dependencies you mentioned.",
+      "ai_response": "To implement JWT authentication in FastAPI, as discussed earlier, you'd use a library like `PyJWT`. This involves creating a dependency function that extracts the token from the `Authorization` header, then utilizes `PyJWT` to decode, validate its signature and expiration.",
+      "response_length": 273,
+      "token_usage": 0,
+      "timestamp": "2025-09-04T07:33:48.268370",
+      "context_analysis": {
+        "jwt_specific_keywords_found": [],
+        "jwt_keyword_count": 0,
+        "context_indicators_found": [
+          "discussed",
+          "earlier"
+        ],
+        "context_indicator_count": 2,
+        "likely_uses_context": true
+      },
+      "success": true
+    }
+  ],
+  "test_success": false,
+  "error_message": null,
+  "semantic_search_tests": [
+    {
+      "query": "FastAPI error handling best practices",
+      "expected_relevance": "Should find early message about @app.exception_handler decorator",
+      "target_sequence": 1,
+      "memories_found": 0,
+      "top_similarities": [],
+      "found_target": false
+    },
+    {
+      "query": "JWT authentication implementation FastAPI",
+      "expected_relevance": "Should find message about python-jose and OAuth2PasswordBearer",
+      "target_sequence": 3,
+      "memories_found": 0,
+      "top_similarities": [],
+      "found_target": false
+    },
+    {
+      "query": "database connection pooling FastAPI",
+      "expected_relevance": "Should find message about SQLAlchemy Session and dependency injection",
+      "target_sequence": 2,
+      "memories_found": 0,
+      "top_similarities": [],
+      "found_target": false
+    },
+    {
+      "query": "FastAPI project structure recommendations",
+      "expected_relevance": "Should find message about app/, models/, schemas/ structure",
+      "target_sequence": 4,
+      "memories_found": 0,
+      "top_similarities": [],
+      "found_target": false
+    },
+    {
+      "query": "Pydantic version differences",
+      "expected_relevance": "Should find message about Pydantic v1 vs v2 changes",
+      "target_sequence": 6,
+      "memories_found": 0,
+      "top_similarities": [],
+      "found_target": false
+    }
+  ],
+  "verification_results": {
+    "timestamp": "2025-09-04T07:33:48.273605",
+    "conversation_id": "conv_98a431fe",
+    "total_messages_created": 35,
+    "semantic_search_working": false,
+    "ai_context_usage": true,
+    "overall_success": false,
+    "detailed_analysis": {
+      "search_success_rate": 0.0,
+      "target_found_rate": 0.0,
+      "ai_context_usage_rate": 1.0
+    }
+  }
+}

@@ -54,7 +54,9 @@ except ImportError:
         # When running as module from other contexts
         from src.config import get_config
 
-from services.conversation_service import ConversationService, init_conversation_service, ConversationResponse
+# from services.conversation_service import ConversationService, init_conversation_service, ConversationResponse ## phase-1 only direct context
+from services.enhanced_conversation_service import EnhancedConversationService as ConversationService, init_enhanced_conversation_service as init_conversation_service  ## phase-2 enhanced context
+from services.conversation_service import ConversationResponse
 
 
 # Pydantic models for API request/response validation

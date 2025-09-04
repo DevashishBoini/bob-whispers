@@ -64,6 +64,7 @@ flake8==6.1.0
 # =============================================================================
 # ChromaDB - Vector database for semantic search
 chromadb==0.4.18
+numpy==1.26.4
 
 # =============================================================================
 # PHASE 3 DEPENDENCIES (commented out for now) 

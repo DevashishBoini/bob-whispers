@@ -19,7 +19,7 @@ Usage Example:
     db_path = config.database.path
 
     
-Class Structure (Small, Focused Classes):
+Class Structure :
     
 Settings (main container)
 ├── GeminiConfig - AI API settings only
