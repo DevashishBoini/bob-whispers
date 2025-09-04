@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""
+TTS Troubleshooting Guide - Fixed Version
+"""
+
+def show_tts_guide():
+    print("🔧 TTS FIXED - Testing Guide")
+    print("=" * 50)
+    print()
+    print("🎯 NEW URL: https://07a342f4db1ee12281.gradio.live")
+    print()
+    print("✅ FIXED ISSUES:")
+    print("1. Proper JavaScript integration with Gradio")
+    print("2. Enhanced voice loading and selection")
+    print("3. Better error handling for speech synthesis")
+    print("4. Improved voice type detection")
+    print()
+    print("🔊 HOW TO TEST TTS:")
+    print()
+    print("STEP 1: Open the interface")
+    print("   → https://07a342f4db1ee12281.gradio.live")
+    print()
+    print("STEP 2: Test Manual TTS")
+    print("   1. Scroll down to 'Text to Read Out' section")
+    print("   2. Type: 'Hello, this is a test of text to speech'")
+    print("   3. Select voice type (Female/Male/Default)")
+    print("   4. Click '🔊 Read Text'")
+    print("   5. You should hear the text spoken!")
+    print()
+    print("STEP 3: Test Auto-fill TTS")
+    print("   1. Send a text message to the AI")
+    print("   2. The 'Text to Read Out' should auto-fill with AI response")
+    print("   3. Click '🔊 Read Text' to hear the AI response")
+    print()
+    print("STEP 4: Voice Control")
+    print("   1. Use '⏹️ Stop' button to stop current speech")
+    print("   2. Try different voice types")
+    print()
+    print("🔍 TROUBLESHOOTING:")
+    print("- Make sure your browser supports Web Speech API")
+    print("- Chrome/Edge work best")
+    print("- Check browser console (F12) for any errors")
+    print("- Ensure volume is up and browser has audio permissions")
+    print()
+    print("🎉 TTS should now work properly!")
+
+if __name__ == "__main__":
+    show_tts_guide()

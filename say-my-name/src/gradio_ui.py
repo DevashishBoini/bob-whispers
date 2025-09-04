@@ -3,12 +3,15 @@ AI Assistant Gradio Frontend Interface
 
 This module provides a Claude-like chat interface using Gradio that connects
 to the FastAPI backend. Features conversation management, real-time chat,
-and a professional user interface.
+voice input with TTS responses, and a professional user interface.
 
 Key Features:
 - Claude-like interface with sidebar and main chat area
 - Multiple conversation thread management
 - Real-time message processing with loading indicators
+- Voice input with automatic transcription
+- Text-to-speech responses (TTS enabled by default)
+- Manual TTS controls with voice selection
 - Conversation history loading and display
 - Responsive design for desktop and mobile
 - Error handling with user-friendly messages
@@ -150,14 +153,16 @@ class APIClient:
         response = self._make_request("GET", "/conversations")
         return response.get("conversations", [])
     
-    def send_message(self, conversation_id: str, message: str, input_type: str = "text") -> Dict[str, Any]:
+    def send_message(self, conversation_id: str, message: str, input_type: str = "text", 
+                    enable_tts: bool = False) -> Dict[str, Any]:
         """
-        Send message to AI assistant.
+        Send message to AI assistant with optional TTS.
         
         Args:
             conversation_id: Target conversation ID
             message: User's message
             input_type: Type of input (text or voice)
+            enable_tts: Whether to enable TTS response
             
         Returns:
             Dict[str, Any]: AI response data
@@ -165,9 +170,60 @@ class APIClient:
         data = {
             "conversation_id": conversation_id,
             "message": message,
-            "input_type": input_type
+            "input_type": input_type,
+            "enable_tts": enable_tts
         }
         return self._make_request("POST", "/chat/message", data)
+    
+    def send_voice_message(self, conversation_id: str, audio_file_path: str, 
+                          enable_tts: bool = True) -> Dict[str, Any]:
+        """
+        Send voice message to AI assistant.
+        
+        Args:
+            conversation_id: Target conversation ID
+            audio_file_path: Path to audio file
+            enable_tts: Whether to enable TTS response
+            
+        Returns:
+            Dict[str, Any]: AI response data
+        """
+        try:
+            print(f"🔍 Sending voice message: {audio_file_path}")
+            
+            # Check if file exists
+            import os
+            if not os.path.exists(audio_file_path):
+                raise Exception(f"Audio file not found: {audio_file_path}")
+            
+            with open(audio_file_path, 'rb') as f:
+                files = {'audio_file': ('voice.mp3', f, 'audio/mp3')}
+                data = {
+                    'conversation_id': conversation_id,
+                    'enable_tts': str(enable_tts).lower()
+                }
+                
+                url = f"{self.base_url}/chat/voice"
+                print(f"🌐 Making request to: {url}")
+                
+                response = requests.post(url, files=files, data=data, timeout=self.timeout)
+                
+                print(f"📡 Response status: {response.status_code}")
+                
+                if response.status_code != 200:
+                    print(f"❌ HTTP Error: {response.text}")
+                
+                response.raise_for_status()
+                result = response.json()
+                print(f"✅ API response received: {result.get('success', False)}")
+                return result
+                
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Request error: {e}")
+            raise Exception(f"❌ Network error: {str(e)}")
+        except Exception as e:
+            print(f"❌ Voice message error: {e}")
+            raise Exception(f"❌ Voice message failed: {str(e)}")
     
     def get_conversation_history(self, conversation_id: str) -> List[Dict[str, Any]]:
         """
@@ -299,38 +355,86 @@ class ConversationManager:
             print(f"❌ Error switching conversation: {e}")
             return [[f"❌ Error loading conversation: {str(e)}", ""]]
     
-    def send_message(self, message: str) -> Tuple[List[List[str]], str]:
+    def send_message(self, message: str, enable_tts: bool = False) -> Tuple[List[List[str]], str]:
         """
         Send message in current conversation.
         
         Args:
             message: User's message
+            enable_tts: Whether to enable TTS response
             
         Returns:
             Tuple[List[List[str]], str]: (updated_chat_history, status_message)
         """
         if not self.current_conversation_id:
             return [], "❌ No conversation selected. Please create a new conversation first."
-        
+
         if not message.strip():
             return [], "❌ Message cannot be empty."
-        
+
         try:
             # Send message to API
-            response = self.api.send_message(self.current_conversation_id, message.strip())
-            
+            response = self.api.send_message(
+                self.current_conversation_id, 
+                message.strip(), 
+                input_type="text",
+                enable_tts=enable_tts
+            )
+
             if response["success"]:
                 # Get updated conversation history
                 updated_history = self.switch_conversation(self.current_conversation_id)
-                return updated_history, "✅ Message sent successfully"
+                tts_status = " (with TTS)" if response.get("has_voice_response") else ""
+                return updated_history, f"✅ Message sent successfully{tts_status}"
             else:
                 error_msg = response.get("error_message", "Unknown error")
                 return [], f"❌ Failed to send message: {error_msg}"
                 
         except Exception as e:
             return [], f"❌ Error sending message: {str(e)}"
+    
+    def send_voice_message(self, audio_file_path: str, enable_tts: bool = True) -> Tuple[List[List[str]], str]:
+        """
+        Send voice message in current conversation.
+        
+        Args:
+            audio_file_path: Path to audio file
+            enable_tts: Whether to enable TTS response
+            
+        Returns:
+            Tuple[List[List[str]], str]: (updated_chat_history, status_message)
+        """
+        if not self.current_conversation_id:
+            return [], "❌ No conversation selected. Please create a new conversation first."
 
+        if not audio_file_path:
+            return [], "❌ Please select an audio file."
 
+        print(f"🎤 Processing voice file: {audio_file_path}")
+        
+        try:
+            # Send voice message to API
+            response = self.api.send_voice_message(
+                self.current_conversation_id,
+                audio_file_path,
+                enable_tts=enable_tts
+            )
+            
+            print(f"📡 API response success: {response.get('success', False)}")
+
+            if response["success"]:
+                # Get updated conversation history
+                updated_history = self.switch_conversation(self.current_conversation_id)
+                tts_status = " (with TTS)" if response.get("has_voice_response") else ""
+                return updated_history, f"✅ Voice message processed{tts_status}"
+            else:
+                error_msg = response.get("error_message", "Unknown error")
+                print(f"❌ API error: {error_msg}")
+                return [], f"❌ Failed to process voice message: {error_msg}"
+                
+        except Exception as e:
+            print(f"❌ Exception in send_voice_message: {e}")
+            return [], f"❌ Error processing voice message: {str(e)}"
 def create_chat_interface() -> gr.Blocks:
     """
     Create the main chat interface using Gradio.
@@ -346,11 +450,11 @@ def create_chat_interface() -> gr.Blocks:
     api_client = APIClient(f"http://{config.app.host}:{config.app.port}")
     conv_manager = ConversationManager(api_client)
     
-    # Custom CSS for Claude-like appearance
+    # Custom CSS and JavaScript for voice features
     custom_css = """
     /* Main container styling */
     .gradio-container {
-        max-width: 1200px !important;
+        max-width: 1400px !important;
         margin: 0 auto;
     }
     
@@ -370,9 +474,26 @@ def create_chat_interface() -> gr.Blocks:
         overflow: hidden;
     }
     
+    /* Voice input styling */
+    .voice-section {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
     /* Button styling */
     .primary-button {
         background-color: #007bff !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 8px 16px !important;
+    }
+    
+    .voice-button {
+        background-color: #28a745 !important;
         color: white !important;
         border: none !important;
         border-radius: 6px !important;
@@ -397,18 +518,147 @@ def create_chat_interface() -> gr.Blocks:
         color: #dc3545;
         font-weight: bold;
     }
+    
+    /* Input sections */
+    .input-section {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        background-color: #f8f9fa;
+    }
+    
+    /* TTS Button styling */
+    .tts-button {
+        background-color: #17a2b8 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 4px !important;
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+        margin-left: 8px !important;
+    }
+    
+    .tts-button:hover {
+        background-color: #138496 !important;
+    }
+    """
+    
+    # JavaScript for TTS functionality
+    tts_javascript = """
+    <script>
+    // Initialize speech synthesis voices
+    let voicesLoaded = false;
+    let availableVoices = [];
+    
+    function loadVoices() {
+        availableVoices = speechSynthesis.getVoices();
+        voicesLoaded = true;
+        console.log('Available voices:', availableVoices.length);
+        availableVoices.forEach((voice, index) => {
+            console.log(`Voice ${index}: ${voice.name} (${voice.lang})`);
+        });
+    }
+    
+    // Load voices when available
+    if ('speechSynthesis' in window) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+        // Also try to load immediately
+        setTimeout(loadVoices, 100);
+    }
+    
+    // Enhanced TTS function
+    function speakTextEnhanced(text, voiceType = 'female') {
+        return new Promise((resolve, reject) => {
+            if (!voicesLoaded) {
+                loadVoices();
+                setTimeout(() => speakTextEnhanced(text, voiceType), 500);
+                return;
+            }
+            
+            if (!('speechSynthesis' in window)) {
+                reject('Speech synthesis not supported');
+                return;
+            }
+            
+            // Stop any current speech
+            speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Select voice
+            let selectedVoice = availableVoices[0]; // Default fallback
+            
+            if (voiceType === 'female') {
+                selectedVoice = availableVoices.find(voice => 
+                    voice.name.toLowerCase().includes('female') ||
+                    voice.name.includes('Zira') ||
+                    voice.name.includes('Samantha') ||
+                    voice.name.includes('Karen') ||
+                    voice.name.includes('Victoria') ||
+                    voice.name.includes('Susan')
+                ) || selectedVoice;
+            } else if (voiceType === 'male') {
+                selectedVoice = availableVoices.find(voice => 
+                    voice.name.toLowerCase().includes('male') ||
+                    voice.name.includes('David') ||
+                    voice.name.includes('Daniel') ||
+                    voice.name.includes('Alex') ||
+                    voice.name.includes('Tom')
+                ) || selectedVoice;
+            }
+            
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                console.log('Using voice:', selectedVoice.name);
+            }
+            
+            // Speech settings
+            utterance.rate = 0.8;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = 'en-US';
+            
+            // Event handlers
+            utterance.onstart = () => {
+                console.log('Speech started');
+                resolve('Speaking...');
+            };
+            
+            utterance.onend = () => {
+                console.log('Speech ended');
+            };
+            
+            utterance.onerror = (event) => {
+                console.error('Speech error:', event.error);
+                reject(event.error);
+            };
+            
+            // Speak
+            speechSynthesis.speak(utterance);
+        });
+    }
+    
+    // Test TTS on page load
+    window.addEventListener('load', function() {
+        setTimeout(() => {
+            console.log('TTS Test: Voices available:', speechSynthesis.getVoices().length);
+        }, 1000);
+    });
+    </script>
     """
     
     # Create the interface
     with gr.Blocks(
-        title="AI Assistant",
+        title="AI Assistant with Voice",
         theme=gr.themes.Soft(),
-        css=custom_css
+        css=custom_css,
+        head=tts_javascript
     ) as interface:
         
         # Header
-        gr.Markdown("# 🤖 AI Assistant")
-        gr.Markdown("*Your intelligent conversation partner with persistent memory*")
+        gr.Markdown("# 🤖 AI Assistant with Voice & TTS")
+        gr.Markdown("*Your intelligent conversation partner with voice input, text-to-speech responses, and persistent memory*")
         
         # Check API health on startup
         with gr.Row():
@@ -462,28 +712,77 @@ def create_chat_interface() -> gr.Blocks:
                 # Chat history display
                 chatbot = gr.Chatbot(
                     label="Chat History",
-                    height=500,
+                    height=450,
                     show_label=False,
                     container=True,
                     bubble_full_width=False
                 )
                 
-                # Message input area
+                # TTS Control Section
                 with gr.Row():
-                    message_input = gr.Textbox(
-                        label="Message",
-                        placeholder="Type your message here... (Press Enter to send)",
-                        lines=1,
-                        scale=4,
-                        show_label=False
-                    )
+                    with gr.Column(scale=3):
+                        tts_text_input = gr.Textbox(
+                            label="Text to Read Out",
+                            placeholder="Enter text to be read aloud, or it will auto-fill with the last AI response...",
+                            lines=2,
+                            show_label=True
+                        )
+                    with gr.Column(scale=1):
+                        with gr.Row():
+                            read_text_btn = gr.Button(
+                                "🔊 Read Text",
+                                elem_classes=["tts-button"],
+                                variant="secondary"
+                            )
+                            stop_reading_btn = gr.Button(
+                                "⏹️ Stop",
+                                elem_classes=["secondary-button"],
+                                variant="stop"
+                            )
+                        
+                        voice_type_dropdown = gr.Dropdown(
+                            label="Voice",
+                            choices=[("Female", "female"), ("Male", "male"), ("Default", "default")],
+                            value="female",
+                            show_label=True
+                        )
+                
+                # Voice input section
+                with gr.Row():
+                    with gr.Column(scale=3):
+                        gr.Markdown("**🎤 Voice Input**")
+                        audio_input = gr.Audio(
+                            label="Record or Upload Audio",
+                            sources=["microphone", "upload"],
+                            type="filepath",
+                            show_label=False
+                        )
+                        
+                        with gr.Row():
+                            voice_send_btn = gr.Button(
+                                "🎤 Send Voice",
+                                elem_classes=["voice-button"],
+                                variant="primary",
+                                interactive=True
+                            )
+                
+                # Text message input area
+                with gr.Row():
+                    with gr.Column(scale=4):
+                        gr.Markdown("**💬 Text Input**")
+                        message_input = gr.Textbox(
+                            label="Message",
+                            placeholder="Type your message here... (Press Enter to send)",
+                            lines=1,
+                            show_label=False
+                        )
                     
-                    send_btn = gr.Button(
-                        "📤 Send",
-                        elem_classes=["primary-button"],
-                        variant="primary",
-                        scale=1
-                    )
+                    with gr.Column(scale=1):
+                        send_btn = gr.Button(
+                            "📤 Send",
+                            elem_classes=["primary-button"],
+                            variant="primary"
+                        )
                 
                 # Chat status
                 chat_status = gr.Markdown("", elem_classes=["status-success"])
@@ -551,22 +850,129 @@ def create_chat_interface() -> gr.Blocks:
             """Send user message and get AI response."""
             if not message.strip():
                 return current_history, "", "❌ Please enter a message"
-            
+
             try:
-                # Immediately add user message to chat history
-                updated_history = current_history + [[message, None]]
-                yield updated_history, "", "⏳ AI is thinking..."
-                
-                # Send message to API
-                api_response_history, status = conv_manager.send_message(message)
-                
+                # Send message to API with TTS enabled by default
+                api_response_history, status = conv_manager.send_message(message, enable_tts=True)
+
                 # Return final updated state with AI response
-                yield api_response_history, "", status
-                
+                return api_response_history, "", status
+
             except Exception as e:
                 # Keep user message visible even if error occurs
                 error_history = current_history + [[message, f"❌ Error: {str(e)}"]]
-                yield error_history, "", f"❌ Error: {str(e)}"
+                error_message = f"❌ Error: {str(e)}"
+                print(f"Message processing error: {e}")
+                return error_history, "", error_message
+        
+        def send_voice_message(audio_path, current_history):
+            """Send voice message and get AI response."""
+            if not audio_path:
+                return current_history, "❌ Please record or upload an audio file"
+
+            try:
+                # Show processing status immediately
+                processing_history = current_history + [["[Processing voice message...]", None]]
+                
+                # Send voice message to API with TTS enabled by default
+                api_response_history, status = conv_manager.send_voice_message(audio_path, enable_tts=True)
+
+                # Return final updated state
+                return api_response_history, status
+
+            except Exception as e:
+                error_message = f"❌ Voice error: {str(e)}"
+                print(f"Voice processing error: {e}")
+                return current_history, error_message
+        
+        def read_text_aloud(text, voice_type):
+            """Trigger text-to-speech for given text."""
+            if not text.strip():
+                return "⚠️ No text to read"
+            
+            # Return JavaScript code that will be executed by Gradio
+            js_code = f"""
+            () => {{
+                const text = `{text.replace('`', '\\`').replace('\\', '\\\\').replace('"', '\\"')}`;
+                const voiceType = '{voice_type}';
+                
+                // Stop any current speech
+                if (window.speechSynthesis.speaking) {{
+                    window.speechSynthesis.cancel();
+                }}
+                
+                if ('speechSynthesis' in window) {{
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    // Get available voices
+                    const voices = window.speechSynthesis.getVoices();
+                    
+                    // Select voice based on preference
+                    let selectedVoice = null;
+                    if (voiceType === 'female') {{
+                        selectedVoice = voices.find(voice => 
+                            voice.name.toLowerCase().includes('female') || 
+                            voice.name.includes('Zira') ||
+                            voice.name.includes('Samantha') ||
+                            voice.name.includes('Karen') ||
+                            voice.name.includes('Victoria')
+                        );
+                    }} else if (voiceType === 'male') {{
+                        selectedVoice = voices.find(voice => 
+                            voice.name.toLowerCase().includes('male') || 
+                            voice.name.includes('David') ||
+                            voice.name.includes('Daniel') ||
+                            voice.name.includes('Alex')
+                        );
+                    }}
+                    
+                    // Fallback to first available voice
+                    if (!selectedVoice && voices.length > 0) {{
+                        selectedVoice = voices[0];
+                    }}
+                    
+                    if (selectedVoice) {{
+                        utterance.voice = selectedVoice;
+                    }}
+                    
+                    // Speech settings
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.8;
+                    
+                    // Speak the text
+                    window.speechSynthesis.speak(utterance);
+                    
+                    return "🔊 Speaking: " + text.substring(0, 50) + (text.length > 50 ? "..." : "");
+                }} else {{
+                    return "❌ Speech synthesis not supported in your browser";
+                }}
+            }}
+            """
+            
+            return f"🔊 Reading: {text[:50]}..." if len(text) > 50 else f"🔊 Reading: {text}", js_code
+        
+        def stop_text_reading():
+            """Stop current text-to-speech."""
+            js_code = """
+            () => {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                    return "⏹️ Stopped reading";
+                } else {
+                    return "ℹ️ No speech to stop";
+                }
+            }
+            """
+            return "⏹️ Stopping...", js_code
+        
+        def auto_fill_last_response(chat_history):
+            """Auto-fill the TTS input with the last AI response."""
+            if chat_history and len(chat_history) > 0:
+                last_exchange = chat_history[-1]
+                if len(last_exchange) > 1 and last_exchange[1]:  # Check if AI response exists
+                    return last_exchange[1]  # Return AI response
+            return ""
         
         def delete_current_conversation(current_conv_id):
             """Delete the currently selected conversation."""
@@ -647,6 +1053,114 @@ def create_chat_interface() -> gr.Blocks:
             send_message,
             inputs=[message_input, chatbot],
             outputs=[chatbot, message_input, chat_status]
+        )
+        
+        # Voice message button
+        voice_send_btn.click(
+            send_voice_message,
+            inputs=[audio_input, chatbot],
+            outputs=[chatbot, chat_status]
+        )
+        
+        # TTS Controls with JavaScript
+        read_text_btn.click(
+            fn=None,
+            js="""
+            (text, voice_type) => {
+                if (!text.trim()) {
+                    return "⚠️ No text to read";
+                }
+                
+                // Stop any current speech
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                }
+                
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    // Get available voices
+                    const voices = window.speechSynthesis.getVoices();
+                    
+                    // Select voice based on preference
+                    let selectedVoice = null;
+                    if (voice_type === 'female') {
+                        selectedVoice = voices.find(voice => 
+                            voice.name.toLowerCase().includes('female') || 
+                            voice.name.includes('Zira') ||
+                            voice.name.includes('Samantha') ||
+                            voice.name.includes('Karen') ||
+                            voice.name.includes('Victoria')
+                        );
+                    } else if (voice_type === 'male') {
+                        selectedVoice = voices.find(voice => 
+                            voice.name.toLowerCase().includes('male') || 
+                            voice.name.includes('David') ||
+                            voice.name.includes('Daniel') ||
+                            voice.name.includes('Alex')
+                        );
+                    }
+                    
+                    // Fallback to first available voice
+                    if (!selectedVoice && voices.length > 0) {
+                        selectedVoice = voices[0];
+                    }
+                    
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                    }
+                    
+                    // Speech settings
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.8;
+                    
+                    // Event handlers
+                    utterance.onstart = function() {
+                        console.log('Started speaking');
+                    };
+                    
+                    utterance.onend = function() {
+                        console.log('Finished speaking');
+                    };
+                    
+                    utterance.onerror = function(event) {
+                        console.error('Speech synthesis error:', event.error);
+                    };
+                    
+                    // Speak the text
+                    window.speechSynthesis.speak(utterance);
+                    
+                    return "🔊 Speaking: " + text.substring(0, 50) + (text.length > 50 ? "..." : "");
+                } else {
+                    return "❌ Speech synthesis not supported in your browser";
+                }
+            }
+            """,
+            inputs=[tts_text_input, voice_type_dropdown],
+            outputs=[chat_status]
+        )
+        
+        stop_reading_btn.click(
+            fn=None,
+            js="""
+            () => {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                    return "⏹️ Stopped reading";
+                } else {
+                    return "ℹ️ No speech to stop";
+                }
+            }
+            """,
+            outputs=[chat_status]
+        )
+        
+        # Auto-fill TTS input when chat updates
+        chatbot.change(
+            auto_fill_last_response,
+            inputs=[chatbot],
+            outputs=[tts_text_input]
         )
         
         # Delete conversation button

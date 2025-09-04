@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "speech_commands": {
+    "type": "web_speech_synthesis",
+    "text": "Hello! I am a large language model, trained by Google. I'm here to assist you by providing information and completing tasks.",
+    "options": {
+      "rate": 1.0,
+      "pitch": 1.0,
+      "volume": 0.8,
+      "lang": "en-US",
+      "voicePreferences": [
+        "Google UK English Female",
+        "Microsoft Zira",
+        "female"
+      ]
+    },
+    "fallback": {
+      "type": "browser_native",
+      "text": "Hello! I am a large language model, trained by Google. I'm here to assist you by providing information and completing tasks."
+    }
+  },
+  "provider_used": "web_speech_api",
+  "duration_ms": null
+}

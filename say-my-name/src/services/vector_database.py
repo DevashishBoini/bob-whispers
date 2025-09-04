@@ -278,7 +278,7 @@ class ConversationCollection:
         self, 
         query_embedding: List[float], 
         max_results: int = 5,
-        similarity_threshold: float = 0.7
+        similarity_threshold: float = 0.5
     ) -> List[ConversationEmbedding]:
         """
         Find messages similar to the query embedding within this conversation.

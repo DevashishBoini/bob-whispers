@@ -1360,7 +1360,7 @@ class SemanticMemoryStorage:
     
     def search_relevant_memories(self, conversation_id: str, query_text: str,
                                 max_results: int = 5, 
-                                similarity_threshold: float = 0.7) -> List[MessageMemory]:
+                                similarity_threshold: float = 0.5) -> List[MessageMemory]:
         """
         Search for semantically relevant memories within a conversation.
         
@@ -1601,7 +1601,7 @@ def init_memory_service() -> MemoryService:
         
         # Create memory configuration
         memory_config = MemoryConfig(
-            similarity_threshold=0.7,  # Fairly strict similarity requirement
+            similarity_threshold=0.5,  # More permissive threshold for better recall
             max_relevant_memories=5,   # Reasonable number for context
             memory_retention_days=90,  # 3-month retention
             background_indexing=True,  # Enable async processing

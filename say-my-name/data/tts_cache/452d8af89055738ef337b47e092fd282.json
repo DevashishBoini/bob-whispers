@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "speech_commands": {
+    "type": "web_speech_synthesis",
+    "text": "He is currently a coach (manager). He retired as a player and is now the manager of Bayer Leverkusen.",
+    "options": {
+      "rate": 1.0,
+      "pitch": 1.0,
+      "volume": 0.8,
+      "lang": "en-US",
+      "voicePreferences": [
+        "Google UK English Female",
+        "Microsoft Zira",
+        "female"
+      ]
+    },
+    "fallback": {
+      "type": "browser_native",
+      "text": "He is currently a coach (manager). He retired as a player and is now the manager of Bayer Leverkusen."
+    }
+  },
+  "provider_used": "web_speech_api",
+  "duration_ms": null
+}

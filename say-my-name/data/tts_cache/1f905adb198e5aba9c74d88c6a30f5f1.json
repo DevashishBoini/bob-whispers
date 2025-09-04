@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "speech_commands": {
+    "type": "web_speech_synthesis",
+    "text": "Xabi Alonso is a former Spanish professional footballer and current manager. As a player, he was a highly decorated defensive midfielder known for his passing range, playing for top clubs like Liverpool, Real Madrid, and Bayern Munich, and winning the World Cup and two European Championships with Spain. He is currently the manager of Bayer Leverkusen.",
+    "options": {
+      "rate": 1.0,
+      "pitch": 1.0,
+      "volume": 0.8,
+      "lang": "en-US",
+      "voicePreferences": [
+        "Google UK English Female",
+        "Microsoft Zira",
+        "female"
+      ]
+    },
+    "fallback": {
+      "type": "browser_native",
+      "text": "Xabi Alonso is a former Spanish professional footballer and current manager. As a player, he was a highly decorated defensive midfielder known for his passing range, playing for top clubs like Liverpool, Real Madrid, and Bayern Munich, and winning the World Cup and two European Championships with Spain. He is currently the manager of Bayer Leverkusen."
+    }
+  },
+  "provider_used": "web_speech_api",
+  "duration_ms": null
+}

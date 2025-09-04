@@ -33,7 +33,7 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any
 import traceback
 
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator, ConfigDict
@@ -55,7 +55,8 @@ except ImportError:
         from src.config import get_config
 
 # from services.conversation_service import ConversationService, init_conversation_service, ConversationResponse ## phase-1 only direct context
-from services.enhanced_conversation_service import EnhancedConversationService as ConversationService, init_enhanced_conversation_service as init_conversation_service  ## phase-2 enhanced context
+# from services.enhanced_conversation_service import EnhancedConversationService as ConversationService, init_enhanced_conversation_service as init_conversation_service  ## phase-2 enhanced context
+from services.voice_enhanced_conversation_service import VoiceEnhancedConversationService as ConversationService, init_voice_enhanced_conversation_service as init_conversation_service  ## phase-3 voice-enhanced context
 from services.conversation_service import ConversationResponse
 
 
@@ -92,6 +93,11 @@ class MessageRequest(BaseModel):
         description="Type of input (text or voice)"
     )
     
+    enable_tts: bool = Field(
+        default=False,
+        description="Whether to generate TTS response"
+    )
+    
     @field_validator('input_type')
     @classmethod
     def validate_input_type(cls, v):
@@ -109,6 +115,28 @@ class MessageRequest(BaseModel):
         return v.strip()
 
 
+class VoiceMessageRequest(BaseModel):
+    """
+    Request model for voice message processing.
+    
+    Attributes:
+        conversation_id: ID of conversation to add message to
+        enable_tts: Whether to generate TTS response
+    """
+    
+    conversation_id: str = Field(
+        ...,
+        description="Unique identifier for the conversation",
+        min_length=8,
+        max_length=50
+    )
+    
+    enable_tts: bool = Field(
+        default=True,
+        description="Whether to generate TTS response"
+    )
+
+
 class MessageResponse(BaseModel):
     """
     Response model for AI assistant messages.
@@ -124,6 +152,8 @@ class MessageResponse(BaseModel):
         input_type: Original input type
         token_usage: Number of tokens used
         error_message: Error description if success is False
+        has_voice_response: Whether TTS audio is available
+        tts_commands: TTS playback commands (if available)
     """
     
     success: bool = Field(..., description="Whether the request succeeded")
@@ -134,6 +164,8 @@ class MessageResponse(BaseModel):
     input_type: str = Field(..., description="Input type used")
     token_usage: int = Field(default=0, description="Tokens used for response")
     error_message: Optional[str] = Field(None, description="Error message if failed")
+    has_voice_response: bool = Field(default=False, description="Whether TTS audio is available")
+    tts_commands: Optional[Dict[str, Any]] = Field(None, description="TTS playback commands")
 
 
 class NewConversationRequest(BaseModel):
@@ -456,43 +488,144 @@ async def process_message(
     
     Main endpoint for chat functionality. Processes user input,
     generates AI response with conversation context, and stores
-    the exchange in the database.
+    the exchange in the database. Supports optional TTS responses.
     
     Args:
         request: Message request containing conversation ID and message
         service: Conversation service dependency
         
     Returns:
-        MessageResponse: AI response with metadata
+        MessageResponse: AI response with metadata and optional TTS commands
         
     Raises:
         HTTPException: If message processing fails
     """
     try:
-        # Process message through conversation service
-        response = service.process_message(
-            conversation_id=request.conversation_id,
-            user_message=request.message,
-            input_type=request.input_type
-        )
-        
-        # Convert service response to API response
-        return MessageResponse(
-            success=response.success,
-            ai_response=response.ai_content,
-            message_id=response.message_id,
-            timestamp=response.timestamp,
-            conversation_id=response.conversation_id,
-            input_type=response.input_type,
-            token_usage=response.token_usage,
-            error_message=response.error_message
-        )
+        # Process message through voice-enhanced conversation service
+        if request.enable_tts:
+            # Use TTS-enabled processing
+            response = service.process_message_with_tts(
+                conversation_id=request.conversation_id,
+                user_message=request.message,
+                input_type=request.input_type,
+                enable_tts=True
+            )
+            
+            # Convert voice response to API response
+            return MessageResponse(
+                success=response.success,
+                ai_response=response.ai_content,
+                message_id=getattr(response, 'message_id', None),
+                timestamp=getattr(response, 'timestamp', None),
+                conversation_id=response.conversation_id,
+                input_type=response.input_type,
+                token_usage=getattr(response, 'token_usage', 0),
+                error_message=response.error_message,
+                has_voice_response=response.has_voice_response,
+                tts_commands=response.tts_commands
+            )
+        else:
+            # Use traditional processing
+            response = service.process_message(
+                conversation_id=request.conversation_id,
+                user_message=request.message,
+                input_type=request.input_type
+            )
+            
+            # Convert service response to API response
+            return MessageResponse(
+                success=response.success,
+                ai_response=response.ai_content,
+                message_id=response.message_id,
+                timestamp=response.timestamp,
+                conversation_id=response.conversation_id,
+                input_type=response.input_type,
+                token_usage=response.token_usage,
+                error_message=response.error_message,
+                has_voice_response=False,
+                tts_commands=None
+            )
         
     except Exception as e:
         print(f"❌ Error processing message: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process message: {str(e)}"
+        )
+
+
+@app.post("/chat/voice", response_model=MessageResponse)
+async def process_voice_message(
+    conversation_id: str = Form(..., description="Conversation ID"),
+    enable_tts: bool = Form(default=True, description="Enable TTS response"),
+    audio_file: UploadFile = File(..., description="Audio file to transcribe"),
+    service: ConversationService = Depends(get_conversation_service)
+):
+    """
+    Process a voice message and generate AI response.
+    
+    Transcribes uploaded audio file to text, processes through conversation
+    pipeline, and optionally generates TTS response.
+    
+    Args:
+        conversation_id: ID of conversation to add message to
+        enable_tts: Whether to generate TTS response
+        audio_file: Uploaded audio file
+        service: Conversation service dependency
+        
+    Returns:
+        MessageResponse: AI response with metadata and optional TTS commands
+        
+    Raises:
+        HTTPException: If voice processing fails
+    """
+    try:
+        # Validate audio file
+        if not audio_file.content_type or not audio_file.content_type.startswith('audio/'):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid file type. Please upload an audio file."
+            )
+        
+        # Read audio data
+        audio_data = await audio_file.read()
+        
+        if len(audio_data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Empty audio file received."
+            )
+        
+        print(f"🎤 Processing voice message: {len(audio_data)} bytes, type: {audio_file.content_type}")
+        
+        # Process voice message through voice service
+        response = service.process_voice_message(
+            conversation_id=conversation_id,
+            audio_data=audio_data,
+            enable_tts=enable_tts
+        )
+        
+        # Convert voice response to API response
+        return MessageResponse(
+            success=response.success,
+            ai_response=response.ai_content,
+            message_id=getattr(response, 'message_id', None),
+            timestamp=getattr(response, 'timestamp', None),
+            conversation_id=response.conversation_id,
+            input_type=response.input_type,
+            token_usage=getattr(response, 'token_usage', 0),
+            error_message=response.error_message,
+            has_voice_response=response.has_voice_response,
+            tts_commands=response.tts_commands
+        )
+        
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions
+    except Exception as e:
+        print(f"❌ Error processing voice message: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process voice message: {str(e)}"
         )
 
 

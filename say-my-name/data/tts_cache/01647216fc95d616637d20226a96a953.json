@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "speech_commands": {
+    "type": "web_speech_synthesis",
+    "text": "I do not have specific public information about an individual named Arun Siddhartha from IIT Hyderabad. If you are looking for details about a faculty member or a specific alumnus, you might find information on the IIT Hyderabad official website or through public academic profiles.",
+    "options": {
+      "rate": 1.0,
+      "pitch": 1.0,
+      "volume": 0.8,
+      "lang": "en-US",
+      "voicePreferences": [
+        "Google UK English Female",
+        "Microsoft Zira",
+        "female"
+      ]
+    },
+    "fallback": {
+      "type": "browser_native",
+      "text": "I do not have specific public information about an individual named Arun Siddhartha from IIT Hyderabad. If you are looking for details about a faculty member or a specific alumnus, you might find information on the IIT Hyderabad official website or through public academic profiles."
+    }
+  },
+  "provider_used": "web_speech_api",
+  "duration_ms": null
+}

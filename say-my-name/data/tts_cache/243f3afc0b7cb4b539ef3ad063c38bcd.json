@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "speech_commands": {
+    "type": "web_speech_synthesis",
+    "text": "He currently plays for RB Leipzig on loan. His parent club is Paris Saint-Germain.",
+    "options": {
+      "rate": 1.0,
+      "pitch": 1.0,
+      "volume": 0.8,
+      "lang": "en-US",
+      "voicePreferences": [
+        "Google UK English Female",
+        "Microsoft Zira",
+        "female"
+      ]
+    },
+    "fallback": {
+      "type": "browser_native",
+      "text": "He currently plays for RB Leipzig on loan. His parent club is Paris Saint-Germain."
+    }
+  },
+  "provider_used": "web_speech_api",
+  "duration_ms": null
+}
